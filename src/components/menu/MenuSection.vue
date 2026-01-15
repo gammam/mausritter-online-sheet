@@ -11,6 +11,20 @@
         i
       </button>
     </div>
+    <div class="menu__fork-notice menu--bordered">
+      <p class="fork-notice__title">🍴 This is a Fork</p>
+      <p class="fork-notice__text">
+        Based on <a href="https://github.com/BrightsDays/mausritter-online-sheet" target="_blank" rel="noopener">BrightsDays' original</a>
+      </p>
+      <details class="fork-notice__features">
+        <summary>✨ New Features</summary>
+        <ul>
+          <li>2-slot inventory items</li>
+          <li>Auto-rotation system</li>
+          <li>Campaign resources</li>
+        </ul>
+      </details>
+    </div>
     <div 
       v-if="characterStore.warband"
       class="menu__options menu--bordered"
@@ -306,6 +320,73 @@ const addHireling = () => popupStore.setPopup('addHireling')
 
   &--bordered {
     border-bottom: 1px solid var(--main);
+  }
+
+  &__fork-notice {
+    padding: 12px 15px;
+    background: rgba(255, 165, 0, 0.05);
+  }
+}
+
+.fork-notice {
+  &__title {
+    font-size: 1.4em;
+    font-weight: 600;
+    color: var(--main);
+    margin-bottom: 6px;
+  }
+
+  &__text {
+    font-size: 1.2em;
+    color: var(--main);
+    margin-bottom: 8px;
+    line-height: 1.4;
+
+    a {
+      color: #ff8c00;
+      text-decoration: none;
+      font-weight: 500;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  &__features {
+    font-size: 1.2em;
+    color: var(--main);
+
+    summary {
+      cursor: pointer;
+      font-weight: 500;
+      margin-bottom: 6px;
+      user-select: none;
+
+      &:hover {
+        color: #ff8c00;
+      }
+    }
+
+    ul {
+      margin: 6px 0 0 18px;
+      padding: 0;
+      list-style: none;
+
+      li {
+        position: relative;
+        padding-left: 12px;
+        margin-bottom: 4px;
+        line-height: 1.4;
+
+        &:before {
+          content: "→";
+          position: absolute;
+          left: 0;
+          color: #ff8c00;
+        }
+      }
+    }
   }
 }
 </style>
