@@ -1,0 +1,14 @@
+{
+  "list": [
+    {
+      "title": "Example Campaign Armor",
+      "stat": "",
+      "image": "",
+      "type": "Light armor",
+      "group": "items",
+      "used": 0,
+      "description": "Special campaign armor",
+      "source": "campaign"
+    }
+  ]
+}

@@ -43,12 +43,17 @@
         :data-index="hirelingIndex"
         :data-warband="isWarband"
         class="pack-items__back"
+        :class="{ 
+          'pack-items__back--double': item.item?.slots === 2 && item.item?.orientation === 'horizontal',
+          'pack-items__back--tall': item.item?.slots === 2 && item.item?.orientation === 'vertical',
+          'pack-items__back--occupied': item.occupiedBy
+        }"
         @drop="event => drop(event, 'packBack', store)"
         @dragover="allowDrop"
         @dragleave="leaveDrag"
       >
         <span
-          v-if="!item.item"
+          v-if="!item.item && !item.occupiedBy"
           class="pack-items__name"
         >
           {{ item.name }}
@@ -60,7 +65,7 @@
         />
 
         <UiItemCard
-          v-else
+          v-else-if="item.item"
           :item="item.item"
           @point-click="setPackItemStats($event, index)"
         />
@@ -294,6 +299,26 @@ const setPackItemStats = (event: number, index: string | number) => {
       width: 100%;
       height: 100%;
       border: 1px dashed var(--second);
+    }
+
+    &--double {
+      grid-column: span 2;
+      
+      &::before {
+        width: calc(200% + 2px);
+      }
+    }
+
+    &--tall {
+      grid-row: span 2;
+      
+      &::before {
+        height: calc(200% + 2px);
+      }
+    }
+
+    &--occupied {
+      display: none;
     }
   }
 

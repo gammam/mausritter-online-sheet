@@ -1,0 +1,14 @@
+{
+  "list": [
+    {
+      "title": "Campaign Fireball",
+      "stat": "d10",
+      "image": "",
+      "type": "Utility",
+      "group": "items",
+      "used": 0,
+      "description": "A powerful spell from the campaign",
+      "source": "campaign"
+    }
+  ]
+}

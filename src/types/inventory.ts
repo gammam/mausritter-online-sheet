@@ -5,6 +5,7 @@ export interface Condition {
   description: string
   clear: string
   group: 'conditions'
+  source?: 'standard' | 'campaign'
 }
 
 export interface Item {
@@ -14,6 +15,10 @@ export interface Item {
   type: ItemType
   group: 'items'
   used?:  0 | 1 | 2 | 3
+  slots?: 1 | 2
+  orientation?: 'horizontal' | 'vertical'
+  source?: 'standard' | 'campaign'
+  description?: string
 }
 
 export interface BodyBack {

@@ -1,6 +1,86 @@
 import { BodyBack, PackBack, BodyIndexes, PackIndexes } from '../types/inventory'
 import { Card, Bank } from '../types/cards'
 
+// Helper per ottenere lo slot successivo nel packBack (orizzontale)
+const getNextPackSlot = (currentSlot: string): string | null => {
+  const slotNumber = parseInt(currentSlot)
+  if (slotNumber >= 1 && slotNumber < 6) {
+    return (slotNumber + 1).toString()
+  }
+  return null
+}
+
+// Helper per ottenere lo slot sotto nel packBack (verticale: 1→4, 2→5, 3→6)
+const getVerticalPackSlot = (currentSlot: string): string | null => {
+  const slotNumber = parseInt(currentSlot)
+  if (slotNumber >= 1 && slotNumber <= 3) {
+    return (slotNumber + 3).toString()
+  }
+  return null
+}
+
+// Helper per verificare se uno slot è disponibile
+const isSlotAvailable = (inventory: BodyBack | PackBack, slotId: string): boolean => {
+  const slot = inventory[slotId as keyof typeof inventory]
+  return slot && !slot.item && !slot.occupiedBy
+}
+
+// Helper per verificare se ci sono abbastanza slot liberi per un item
+// Restituisce l'orientamento possibile: 'horizontal', 'vertical', o null
+const canPlaceItem = (inventory: BodyBack | PackBack, slotId: string, slots: number, type: string): 'horizontal' | 'vertical' | null => {
+  if (slots === 1) {
+    return isSlotAvailable(inventory, slotId) ? 'horizontal' : null
+  }
+  
+  // Per item a 2 slot nel packBack, prova prima orizzontale poi verticale
+  if (type === 'packBack') {
+    // Prova orizzontale (slot affiancati)
+    const nextSlot = getNextPackSlot(slotId)
+    if (nextSlot && isSlotAvailable(inventory, slotId) && isSlotAvailable(inventory, nextSlot)) {
+      return 'horizontal'
+    }
+    
+    // Prova verticale (slot sovrapposti)
+    const verticalSlot = getVerticalPackSlot(slotId)
+    if (verticalSlot && isSlotAvailable(inventory, slotId) && isSlotAvailable(inventory, verticalSlot)) {
+      return 'vertical'
+    }
+    
+    return null
+  }
+  
+  // Per bodyBack, non permettiamo item a 2 slot
+  return null
+}
+
+// Helper per pulire slot occupiedBy orfani (quando il principale viene rimosso)
+const cleanOrphanedSlots = (inventory: PackBack): PackBack => {
+  const cleanedInventory = { ...inventory }
+  const occupiedSlots = new Set<string>()
+  
+  // Raccoglie tutti gli slot effettivamente occupati da item a 2 slot
+  Object.entries(cleanedInventory).forEach(([key, slot]) => {
+    if (slot.item && slot.item.slots === 2) {
+      const nextSlot = getNextPackSlot(key)
+      if (nextSlot) {
+        occupiedSlots.add(nextSlot)
+      }
+    }
+  })
+  
+  // Pulisce gli slot occupiedBy che non hanno più un riferimento valido
+  Object.entries(cleanedInventory).forEach(([key, slot]) => {
+    if (slot.occupiedBy && !occupiedSlots.has(key)) {
+      cleanedInventory[key as PackIndexes] = {
+        ...slot,
+        occupiedBy: undefined
+      }
+    }
+  })
+  
+  return cleanedInventory
+}
+
 export const onDragging = (event: DragEvent, item: Card) => {
   if (event.dataTransfer) {    
     const data: Card = {
@@ -14,7 +94,9 @@ export const onDragging = (event: DragEvent, item: Card) => {
       description: item.description || null,
       clear: item.clear || null,
       hirelingIndex: (event.target as Node).parentElement?.dataset.index || null,
-      warband: (event.target as Node).parentElement?.dataset.warband || null
+      warband: (event.target as Node).parentElement?.dataset.warband || null,
+      slots: item.slots || 1,
+      orientation: item.orientation
     }
 
     if (((event.target as Node).childNodes[1] as HTMLElement).classList.contains('status')) {
@@ -36,6 +118,8 @@ export const onDragging = (event: DragEvent, item: Card) => {
     if (data.clear) event.dataTransfer.setData('clear', data.clear)
     if (data.hirelingIndex) event.dataTransfer.setData('hirelingIndex', data.hirelingIndex.toString())
     if (data.warband) event.dataTransfer.setData('warband', data.warband.toString())
+    if (data.slots) event.dataTransfer.setData('slots', data.slots.toString())
+    if (data.orientation) event.dataTransfer.setData('orientation', data.orientation)
   }
 }
 
@@ -68,13 +152,17 @@ export const drop = async (event: DragEvent, type: string, store: any) => {
       group: event.dataTransfer.getData('group'),
       used: event.dataTransfer.getData('used'),
       description: event.dataTransfer.getData('description'),
-      clear: event.dataTransfer.getData('clear')
+      clear: event.dataTransfer.getData('clear'),
+      slots: parseInt(event.dataTransfer.getData('slots')) || 1,
+      orientation: event.dataTransfer.getData('orientation') as 'horizontal' | 'vertical' || undefined
     }
     : null
 
   const moveFrom = async () => {    
     const hirelingIndex = event.dataTransfer?.getData('hirelingIndex')
     const warband = event.dataTransfer?.getData('warband') === 'warband' ? true : false
+    const itemSlots = data?.slots || 1
+    const itemOrientation = data?.orientation
 
     if (slotId && slotId.includes('bnk')) {
       let newBank = store.bank
@@ -116,14 +204,33 @@ export const drop = async (event: DragEvent, type: string, store: any) => {
       }
 
       if (Object.keys(store.packBack).includes(slotId)) {
-        store.updateWarbandItems('packBack', {
+        const updatedPack = {
           ...store.warband.packBack as PackBack,
           [slotId]: {
             name: slotId,
             item: null,
-            used: 0
+            used: 0,
+            occupiedBy: undefined
           }
-        })
+        }
+        
+        // Se l'item occupava 2 slot, libera anche il secondo in base all'orientamento
+        if (itemSlots === 2 && itemOrientation) {
+          const secondSlot = itemOrientation === 'horizontal' 
+            ? getNextPackSlot(slotId) 
+            : getVerticalPackSlot(slotId)
+          
+          if (secondSlot) {
+            updatedPack[secondSlot as PackIndexes] = {
+              name: secondSlot,
+              item: null,
+              used: 0,
+              occupiedBy: undefined
+            }
+          }
+        }
+        
+        store.updateWarbandItems('packBack', updatedPack)
       }
     }
 
@@ -140,14 +247,33 @@ export const drop = async (event: DragEvent, type: string, store: any) => {
       }
 
       if (Object.keys(store.packBack).includes(slotId)) {
-        store.updateItems('packBack', {
+        const updatedPack = {
           ...store.packBack as PackBack,
           [slotId]: {
             name: slotId,
             item: null,
-            used: 0
+            used: 0,
+            occupiedBy: undefined
           }
-        })
+        }
+        
+        // Se l'item occupava 2 slot, libera anche il secondo in base all'orientamento
+        if (itemSlots === 2 && itemOrientation) {
+          const secondSlot = itemOrientation === 'horizontal' 
+            ? getNextPackSlot(slotId) 
+            : getVerticalPackSlot(slotId)
+          
+          if (secondSlot) {
+            updatedPack[secondSlot as PackIndexes] = {
+              name: secondSlot,
+              item: null,
+              used: 0,
+              occupiedBy: undefined
+            }
+          }
+        }
+        
+        store.updateItems('packBack', updatedPack)
       }
     }
 
@@ -164,14 +290,33 @@ export const drop = async (event: DragEvent, type: string, store: any) => {
       }
 
       if (Object.keys(store.packBack).includes(slotId)) {
-        store.updateHirelingItems('packBack', {
+        const updatedPack = {
           ...store.hirelings[hirelingIndex].packBack as PackBack,
           [slotId]: {
             name: slotId,
             item: null,
-            used: 0
+            used: 0,
+            occupiedBy: undefined
           }
-        }, hirelingIndex)
+        }
+        
+        // Se l'item occupava 2 slot, libera anche il secondo in base all'orientamento
+        if (itemSlots === 2 && itemOrientation) {
+          const secondSlot = itemOrientation === 'horizontal' 
+            ? getNextPackSlot(slotId) 
+            : getVerticalPackSlot(slotId)
+          
+          if (secondSlot) {
+            updatedPack[secondSlot as PackIndexes] = {
+              name: secondSlot,
+              item: null,
+              used: 0,
+              occupiedBy: undefined
+            }
+          }
+        }
+        
+        store.updateHirelingItems('packBack', updatedPack, hirelingIndex)
       }
     }
   }
@@ -183,6 +328,7 @@ export const drop = async (event: DragEvent, type: string, store: any) => {
 
     const hirelingIndex = firstChild.parentElement?.dataset.index
     const warband = firstChild.parentElement?.dataset.warband === 'warband' ? true : false
+    const itemSlots = data?.slots || 1
 
     if (data && id && type === 'bank') {
       const nextId = `bnk__${+id.substring(5) + 1}`
@@ -222,13 +368,41 @@ export const drop = async (event: DragEvent, type: string, store: any) => {
       }
 
       if (type === 'packBack') {
-        store.updateWarbandItems('packBack', {
+        // Verifica se c'è spazio per l'item e determina l'orientamento
+        const orientation = canPlaceItem(store.warband.packBack, id, itemSlots, type)
+        if (!orientation) {
+          return // Non può essere posizionato
+        }
+        
+        // Salva l'item con il suo orientamento
+        const itemWithOrientation = itemSlots === 2 
+          ? { ...data, orientation } 
+          : data
+        
+        const updatedPack = {
           ...store.warband.packBack as PackBack,
           [id]: {
             name: id,
-            item: data
+            item: itemWithOrientation
           }
-        })
+        }
+        
+        // Se l'item occupa 2 slot, marca il secondo come occupato in base all'orientamento
+        if (itemSlots === 2) {
+          const secondSlot = orientation === 'horizontal' 
+            ? getNextPackSlot(id) 
+            : getVerticalPackSlot(id)
+          
+          if (secondSlot) {
+            updatedPack[secondSlot as PackIndexes] = {
+              name: secondSlot,
+              item: null,
+              occupiedBy: id
+            }
+          }
+        }
+        
+        store.updateWarbandItems('packBack', updatedPack)
       }
     }
 
@@ -244,13 +418,41 @@ export const drop = async (event: DragEvent, type: string, store: any) => {
       }
 
       if (type === 'packBack') {
-        store.updateItems('packBack', {
+        // Verifica se c'è spazio per l'item e determina l'orientamento
+        const orientation = canPlaceItem(store.packBack, id, itemSlots, type)
+        if (!orientation) {
+          return // Non può essere posizionato
+        }
+        
+        // Salva l'item con il suo orientamento
+        const itemWithOrientation = itemSlots === 2 
+          ? { ...data, orientation } 
+          : data
+        
+        const updatedPack = {
           ...store.packBack as PackBack,
           [id]: {
             name: id,
-            item: data
+            item: itemWithOrientation
           }
-        })
+        }
+        
+        // Se l'item occupa 2 slot, marca il secondo come occupato in base all'orientamento
+        if (itemSlots === 2) {
+          const secondSlot = orientation === 'horizontal' 
+            ? getNextPackSlot(id) 
+            : getVerticalPackSlot(id)
+          
+          if (secondSlot) {
+            updatedPack[secondSlot as PackIndexes] = {
+              name: secondSlot,
+              item: null,
+              occupiedBy: id
+            }
+          }
+        }
+        
+        store.updateItems('packBack', updatedPack)
       }
     }
 
@@ -266,13 +468,41 @@ export const drop = async (event: DragEvent, type: string, store: any) => {
       }
 
       if (type === 'packBack') {
-        store.updateHirelingItems('packBack', {
+        // Verifica se c'è spazio per l'item e determina l'orientamento
+        const orientation = canPlaceItem(store.hirelings[hirelingIndex].packBack, id, itemSlots, type)
+        if (!orientation) {
+          return // Non può essere posizionato
+        }
+        
+        // Salva l'item con il suo orientamento
+        const itemWithOrientation = itemSlots === 2 
+          ? { ...data, orientation } 
+          : data
+        
+        const updatedPack = {
           ...store.hirelings[hirelingIndex].packBack as PackBack,
           [id]: {
             name: id,
-            item: data
+            item: itemWithOrientation
           }
-        }, hirelingIndex)
+        }
+        
+        // Se l'item occupa 2 slot, marca il secondo come occupato in base all'orientamento
+        if (itemSlots === 2) {
+          const secondSlot = orientation === 'horizontal' 
+            ? getNextPackSlot(id) 
+            : getVerticalPackSlot(id)
+          
+          if (secondSlot) {
+            updatedPack[secondSlot as PackIndexes] = {
+              name: secondSlot,
+              item: null,
+              occupiedBy: id
+            }
+          }
+        }
+        
+        store.updateHirelingItems('packBack', updatedPack, hirelingIndex)
       }
     }
   }

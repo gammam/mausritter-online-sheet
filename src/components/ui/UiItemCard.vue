@@ -6,9 +6,12 @@
         item.type === 'Heavy armor' ||
         item.type === 'Heavy ranged' ||
         item.type === 'Height utility')
-        && 'heavy',
-      (item.type === 'Light armor' || item.type === 'Wide utility')
+        && !item.slots && 'heavy',
+      (item.type === 'Light armor' || 
+        item.type === 'Wide utility' ||
+        (item.slots === 2 && item.orientation === 'horizontal'))
         && `wide`,
+      (item.slots === 2 && item.orientation === 'vertical') && 'tall',
       item.type === 'Big utility' && `big`,
       isCell && 'cell']"
     draggable="true"
@@ -106,6 +109,15 @@ const useItem = (index: number) => {
     }
   }
 
+  &.tall {
+    height: 240px;
+
+    .status .image {
+      height: 160px;
+      bottom: 15px;
+    }
+  }
+
   &.big {
     width: 240px;
     height: 240px;
@@ -130,6 +142,12 @@ const useItem = (index: number) => {
     &.wide {
       .status .image {
         transform: translate(120px, 10px);
+      }
+    }
+
+    &.tall {
+      .status .image {
+        transform: translate(50px, 100px);
       }
     }
   }

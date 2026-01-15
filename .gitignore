@@ -6,3 +6,13 @@ dist-ssr
 .idea/
 .vscode/
 package-lock.json
+
+# Old backend files (now in separate repo)
+backend-example.js
+campaign-backend.js
+backend-package.json
+mausritter.db
+mausritter-campaigns.db
+*.db-journal
+*.db-shm
+*.db-wal

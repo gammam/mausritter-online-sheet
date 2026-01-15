@@ -11,6 +11,13 @@ This editor only works on desktop and tablets, and cannot be used on smartphones
 
 All data is stored in your browser's local storage, and you can download it in JSON format at any time. If you're not familiar with JSON, simply avoid making changes to the file. You can upload it to the application on any other device using any browser.
 
+### 🔗 Backend Sync (New!)
+
+You can now connect to a custom backend to sync additional content (custom items, spells, armor, etc.) shared by the community or created by you. See [Backend API Documentation](BACKEND-API.md) for details on how to:
+- Connect your API key
+- Sync custom content
+- Set up your own backend server
+
 ## Instruction
 
 ### Create a Character
@@ -37,10 +44,51 @@ Here you can find controls and lists of game items and conditions.
 
 - **Options:** In this section, you can save your character as a .json file, clear the list, and create or upload a character.
 - **Items, Spells, and Conditions:** Click on a type to see the list of cards. Add cards to inventory via drag'n'drop. Also, you can click on "Add custom item" and create something custom—from a weapon to a large utility; it will not have a unique image.
+- **Backend Sync:** Connect to a backend API to access custom content and community-shared items. Enter your API key to sync armor, weapons, spells, and more.
 - **Add Hireling:** By clicking on the button, you can create a new hireling of a specific type. It will be added to the "Hirelings" list.
 - **Form Warband:** Click the button to create a warband. After that, you'll see a "Show Warband" button above the "Options" section. Easily manage and disband your warband from there.
 - **Grits:** For characters at level 2 and above, use this section to deal with any negative conditions from your inventory.
 - **Bank:** Store your items in the city here. Usually, there's a cost involved; check with your Game Master for details.
+
+## Development
+
+### Running the Project
+
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+### Backend Setup (Optional)
+
+> ⚠️ **Il backend è ora un progetto separato**: [mausritter-backend](https://github.com/mario.gammaldi/mausritter-backend)
+
+Per eseguire il backend localmente:
+
+```bash
+# Clona il repository backend
+cd ..
+git clone https://github.com/mario.gammaldi/mausritter-backend.git
+cd mausritter-backend
+
+# Installa le dipendenze
+npm install
+
+# Avvia i server
+npm run dev              # Server Custom Data (porta 3000)
+npm run dev:campaign     # Server Campagne (porta 3001)
+```
+
+Consulta la [documentazione del backend](https://github.com/mario.gammaldi/mausritter-backend) per maggiori dettagli.
 
 ---
 

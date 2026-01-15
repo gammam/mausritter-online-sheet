@@ -70,6 +70,7 @@
       "image": "Trashhook",
       "type": "Heavy",
       "group": "items",
+      "slots": 2,
       "used": 0
     },
     {
@@ -78,6 +79,7 @@
       "image": "Spear",
       "type": "Heavy",
       "group": "items",
+      "slots": 2,
       "used": 0
     },
     {
@@ -86,6 +88,7 @@
       "image": "Warhammer",
       "type": "Heavy",
       "group": "items",
+      "slots": 2,
       "used": 0
     },
     {
@@ -102,6 +105,7 @@
       "image": "Bow",
       "type": "Heavy ranged",
       "group": "items",
+      "slots": 2,
       "used": 0
     },
     {

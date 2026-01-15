@@ -1,0 +1,14 @@
+{
+  "list": [
+    {
+      "title": "Example Campaign Sword",
+      "stat": "d8",
+      "image": "Sword",
+      "type": "Medium",
+      "group": "items",
+      "used": 0,
+      "description": "A legendary sword from the campaign",
+      "source": "campaign"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "list": [
+    {
+      "title": "Magic Compass",
+      "stat": "",
+      "image": "Compass",
+      "type": "Utility",
+      "group": "items",
+      "used": 0,
+      "description": "Points to the nearest treasure",
+      "source": "campaign"
+    },
+    {
+      "title": "Healing Potion",
+      "stat": "d6",
+      "image": "BottleOfMilk",
+      "type": "Utility",
+      "group": "items",
+      "used": 0,
+      "description": "Restores health when consumed",
+      "source": "campaign"
+    }
+  ]
+}

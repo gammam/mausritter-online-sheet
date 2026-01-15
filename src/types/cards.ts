@@ -13,6 +13,8 @@ export interface Card {
   used:  0 | 1 | 2 | 3
   hirelingIndex: string | null
   warband: string | null
+  slots?: 1 | 2
+  orientation?: 'horizontal' | 'vertical'
 }
 
 export interface SimpleCard {
@@ -29,6 +31,7 @@ export interface SimpleCard {
 export interface CardCell {
   name: 'Main Paw' | 'Second Paw' | 'Main Body' | 'Second Body' | '1' | '2' | '3' | '4' | '5' | '6'
   item: Item | Condition | null
+  occupiedBy?: string
 }
 
 export interface GritList {

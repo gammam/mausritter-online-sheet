@@ -129,6 +129,14 @@
       </button>
     </div>
     <div
+      v-if="$route.name !== 'Warband'"
+      class="menu__options menu--bordered"
+    >
+      <ui-details title="📦 Campaign" :is-open="false">
+        <menu-campaign-items />
+      </ui-details>
+    </div>
+    <div
       v-if="characterStore.exp >= 1000 && $route.name !== 'Warband'"
       class="menu__options menu--bordered"
     >
@@ -148,6 +156,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import UiDetails from '../ui/UiDetails.vue'
 import { usePopupStore } from '../../store/popup'
 import MenuItems from './MenuItems.vue'
@@ -159,15 +168,34 @@ import spellData from '../../data/spellList.json'
 import { Item } from '../../types/inventory'
 import BankedItems from './MenuBanked.vue'
 import { useCharacterStore } from '../../store/character'
+import { useCustomDataStore } from '../../store/customData'
 import MenuGrits from './MenuGrits.vue'
+import MenuCampaignItems from './MenuCampaignItems.vue'
 
 const popupStore = usePopupStore()
 const characterStore = useCharacterStore()
+const customDataStore = useCustomDataStore()
 
-const utilityList = utilityData.list as Item[]
-const weaponList = weaponData.list as Item[]
-const armorList = armorData.list as Item[]
-const spellList = spellData.list as Item[]
+// Merge dati base con dati custom dalla campagna
+const utilityList = computed(() => [
+  ...utilityData.list as Item[],
+  ...customDataStore.customUtility
+])
+
+const weaponList = computed(() => [
+  ...weaponData.list as Item[],
+  ...customDataStore.customWeapons
+])
+
+const armorList = computed(() => [
+  ...armorData.list as Item[],
+  ...customDataStore.customArmor
+])
+
+const spellList = computed(() => [
+  ...spellData.list as Item[],
+  ...customDataStore.customSpells
+])
 
 const createCharacter = (option: 'new' | 'upload') => {
   if (!characterStore.name) {

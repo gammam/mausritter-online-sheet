@@ -367,6 +367,32 @@
       "type": "Utility",
       "group": "items",
       "used": 0
+    },
+    {
+      "title": "Mucchio di semi",
+      "stat": "",
+      "image": "mucchio-di-semi",
+      "type": "Utility",
+      "group": "items",
+      "used": 0
+    },
+    {
+      "title": "Rope, 50 ft",
+      "stat": "",
+      "image": "",
+      "type": "Utility",
+      "group": "items",
+      "used": 0,
+      "slots": 2
+    },
+    {
+      "title": "Ladder, 10 ft",
+      "stat": "",
+      "image": "",
+      "type": "Utility",
+      "group": "items",
+      "used": 0,
+      "slots": 2
     }
   ]
 }

@@ -1,0 +1,18 @@
+{
+  "list": [
+    {
+      "title": "Blessed",
+      "description": "+1 to all saves during this adventure",
+      "clear": "Complete the quest",
+      "group": "conditions",
+      "source": "campaign"
+    },
+    {
+      "title": "Cursed",
+      "description": "-1 to all attack rolls",
+      "clear": "Visit the shrine",
+      "group": "conditions",
+      "source": "campaign"
+    }
+  ]
+}

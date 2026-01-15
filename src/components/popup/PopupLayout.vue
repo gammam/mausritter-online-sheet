@@ -112,7 +112,7 @@ onUnmounted(async () => {
 })
 </script>
 
-<styles lang="scss" scoped>
+<style lang="scss" scoped>
 .popup {
   display: flex;
   position: absolute;
@@ -184,4 +184,4 @@ onUnmounted(async () => {
     }
   }
 }
-</styles>
+</style>
