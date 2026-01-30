@@ -11,6 +11,7 @@ Mausritter is a sword-and-whiskers role-playing game by [Losing Games](https://l
 - **Auto-Rotation System**: Smart placement that automatically rotates items horizontally or vertically based on available space
 - **Campaign Resources**: Manage custom campaign items separately from standard resources with dedicated JSON files
 - **Enhanced Drag & Drop**: Improved item placement logic with orphaned slot cleanup
+- **Manual Character Creation**: Create characters with completely empty and editable fields, with automatic generation as an alternative
 
 ## Why use this application?
 

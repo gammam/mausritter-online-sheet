@@ -19,6 +19,7 @@ export interface Character {
   bank: Bank[]
   portrait: string | null
   warband: SimpleCard | null
+  playerName?: string
 }
 
 export interface Stats {

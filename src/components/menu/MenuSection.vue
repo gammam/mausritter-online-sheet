@@ -22,6 +22,7 @@
           <li>2-slot inventory items</li>
           <li>Auto-rotation system</li>
           <li>Campaign resources</li>
+          <li>Create Manual Sheet </li>
         </ul>
       </details>
     </div>

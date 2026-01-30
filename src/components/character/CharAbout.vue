@@ -10,7 +10,7 @@
           id="name"
           v-model="character.name"
           class="about-input__input"
-          readonly
+          :readonly="character.creationMethod === 'automatic'"
         >
       </div>
       <div class="about__background about-input">
@@ -22,7 +22,18 @@
           id="background"
           v-model="character.background"
           class="about-input__input about-input__input--small"
-          readonly
+          :readonly="character.creationMethod === 'automatic'"
+        >
+      </div>
+      <div class="about__player-name about-input">
+        <label
+          class="about-input__label about-input__label--small"
+          for="playerName"
+        >Player Name</label>
+        <input
+          id="playerName"
+          v-model="character.playerName"
+          class="about-input__input about-input__input--small"
         >
       </div>
     </div>
@@ -36,7 +47,7 @@
           id="birthsign"
           v-model="character.birthSign"
           class="details-input__input"
-          readonly
+          :readonly="character.creationMethod === 'automatic'"
         >
       </div>
       <div class="details-input">

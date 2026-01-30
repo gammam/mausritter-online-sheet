@@ -1,7 +1,7 @@
 <template>
   <div
     class="character"
-    :class="{'disabled': !characterStore.name}"
+    :class="{'disabled': !characterStore.name && characterStore.creationMethod === 'automatic'}"
   >
     <CharAbout />
     <RouterView />
