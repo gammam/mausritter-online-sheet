@@ -14,13 +14,13 @@
           v-model="item.max"
           type="number"
           class="stats__input"
-          readonly
+          :readonly="characterStore.creationMethod === 'automatic'"
         >
         <input
           v-model="item.current"
           type="number"
           class="stats__input"
-          readonly
+          :readonly="characterStore.creationMethod === 'automatic'"
         >
         <div class="stat-buttons">
           <button
@@ -43,6 +43,9 @@
 
 <script setup lang="ts">
 import { StatKeys } from '../../types/character'
+import { useCharacterStore } from '../../store/character'
+
+const characterStore = useCharacterStore()
 
 const props = defineProps({
   stats: {

@@ -174,8 +174,10 @@ onUnmounted(async () => {
     .body {
       display: flex;
       flex-direction: column;
-      // overflow-y: scroll;
+      overflow-y: auto;
+      max-height: 60svh;
       gap: 10px;
+      padding-right: 10px;
     }
 
     .footer {

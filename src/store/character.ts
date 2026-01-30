@@ -99,7 +99,9 @@ export const useCharacterStore = defineStore('character', {
       item: null
     }],
     portrait: null,
-    warband: null
+    warband: null,
+    creationMethod: 'manual' as 'automatic' | 'manual',
+    playerName: ''
   }),
   getters: {
     level: (state) => {
@@ -287,11 +289,16 @@ export const useCharacterStore = defineStore('character', {
           item: null
         }],
         portrait: '',
-        warband: null
+        warband: null,
+        creationMethod: 'manual',
+        playerName: ''
       }
     },
     addExperience(exp: number) {
       this.exp = +this.exp + +exp
+    },
+    setCreationMethod(method: 'automatic' | 'manual') {
+      this.creationMethod = method
     }
   }
 })

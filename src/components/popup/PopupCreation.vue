@@ -1,52 +1,76 @@
 <template>
   <PopupLayout
-    title="New character"
-    ok-button-text="Create"
-    :ok-button-disabled="characterStore.name.length < 3 || 
-      (selectItem && startItem === '') ||
-      !weapon"
-    @cancel="characterStore.clearCharacter()"
-    @ok="saveCharacter()"
+    :title="mode === 'selection' ? 'Create Character' : 'New character'"
+    :ok-button-text="mode === 'selection' ? 'Next' : 'Create'"
+    :ok-button-disabled="okButtonDisabled"
+    @cancel="handleCancel()"
+    @ok="handleOk()"
   >
     <template #body>
-      <UiInput
-        v-model="characterStore.name"
-        label="Name"
-        type="text"
-      />
-      <div class="content">
-        <span class="stat">STR: {{ characterStore.stats.str.max }}</span>
-        <span class="stat">DEX: {{ characterStore.stats.dex.max }}</span>
-        <span class="stat">WIL: {{ characterStore.stats.wil.max }}</span>
-      </div>
-      <div class="swap">
-        <span class="content">Swap stats *</span>
-        <div class="inputs">
-          <UiSelect
-            v-model="swapStats.first"
-            :options="['str', 'dex', 'wil']"
-            to-uppercase
-          />
-          <span class="content center">and</span>
-          <UiSelect
-            v-model="swapStats.second"
-            :options="['str', 'dex', 'wil']"
-            to-uppercase
-          />
+      <!-- Selection Mode -->
+      <div v-if="mode === 'selection'" class="mode-selection">
+        <p class="selection-title">Choose creation mode:</p>
+        <div class="mode-buttons">
+          <button
+            class="mode-button automatic"
+            @click="selectMode('automatic')"
+          >
+            <span class="mode-icon">🎲</span>
+            <span class="mode-name">Automatic</span>
+            <span class="mode-description">Generate character randomly</span>
+          </button>
+          <button
+            class="mode-button manual"
+            @click="selectMode('manual')"
+          >
+            <span class="mode-icon">✎</span>
+            <span class="mode-name">Manual</span>
+            <span class="mode-description">Create with empty fields</span>
+          </button>
         </div>
       </div>
-      <span class="content small">* This change will only take effect after character creation</span>
-      <UiSelect
-        v-if="selectItem && startItem"
-        v-model="startItem"
-        label="Select item"
-        :options="Object.values(itemsForSelect)"
-      />
-      <UiSelect
-        v-model="weapon"
-        label="Select weapon"
-        :options="weaponsForSelect"
-      />
+
+      <!-- Automatic Mode -->
+      <div v-else-if="mode === 'automatic'" class="creation-form">
+        <UiInput
+          v-model="characterStore.name"
+          label="Name"
+          type="text"
+        />
+        <div class="content">
+          <span class="stat">STR: {{ characterStore.stats.str.max }}</span>
+          <span class="stat">DEX: {{ characterStore.stats.dex.max }}</span>
+          <span class="stat">WIL: {{ characterStore.stats.wil.max }}</span>
+        </div>
+        <div class="swap">
+          <span class="content">Swap stats *</span>
+          <div class="inputs">
+            <UiSelect
+              v-model="swapStats.first"
+              :options="['str', 'dex', 'wil']"
+              to-uppercase
+            />
+            <span class="content center">and</span>
+            <UiSelect
+              v-model="swapStats.second"
+              :options="['str', 'dex', 'wil']"
+              to-uppercase
+            />
+          </div>
+        </div>
+        <span class="content small">* This change will only take effect after character creation</span>
+        <UiSelect
+          v-if="selectItem && startItem"
+          v-model="startItem"
+          label="Select item"
+          :options="Object.values(itemsForSelect)"
+        />
+        <UiSelect
+          v-model="weapon"
+          label="Select weapon"
+          :options="weaponsForSelect"
+        />
+      </div>
     </template>
   </PopupLayout>
 </template>
@@ -64,15 +88,29 @@ import backgroundList from '../../data/backgroundList.json'
 import { BackgroundKeys, StatKeys } from '../../types/character'
 import { Item } from '../../types/inventory'
 import { useCharacterStore } from '../../store/character'
-import { onMounted, ref } from 'vue'
+import { ref, computed } from 'vue'
 import createHireling from '../../composables/createSimpleCard'
 import { useNotificationsStore } from '../../store/notifications'
+import { usePopupStore } from '../../store/popup'
 import UiInput from '../ui/UiInput.vue'
 import UiSelect from '../ui/UiSelect.vue'
 
 const characterStore = useCharacterStore()
 const notificationStore = useNotificationsStore()
+const popupStore = usePopupStore()
 
+// Mode management
+type CreationMode = 'selection' | 'automatic' | 'manual'
+const mode = ref<CreationMode>('selection')
+
+const selectMode = (selectedMode: 'automatic' | 'manual') => {
+  mode.value = selectedMode
+  if (selectedMode === 'automatic') {
+    createCharacter()
+  }
+}
+
+// Automatic mode vars
 const statsForSwap = ref({
   str: 0,
   dex: 0,
@@ -92,6 +130,16 @@ const startItem = ref('')
 const weapon = ref(weaponsForSelect[0])
 const extraItems = ref(false)
 const selectItem = ref(false)
+
+const okButtonDisabled = computed(() => {
+  if (mode.value === 'selection' || mode.value === 'manual') return false
+  if (mode.value === 'automatic') {
+    return characterStore.name.length < 3 || 
+      (selectItem.value && startItem.value === '') ||
+      !weapon.value
+  }
+  return true
+})
 
 const createCharacter = () => {
   characterStore.clearCharacter()
@@ -138,10 +186,31 @@ const createCharacter = () => {
   }
 }
 
-const saveCharacter = () => {  
+const handleCancel = () => {
+  if (mode.value !== 'selection') {
+    mode.value = 'selection'
+    characterStore.clearCharacter()
+  } else {
+    characterStore.clearCharacter()
+  }
+}
+
+const handleOk = () => {
+  if (mode.value === 'selection') {
+    return
+  }
+  
+  if (mode.value === 'automatic') {
+    saveCharacterAutomatic()
+  } else if (mode.value === 'manual') {
+    saveCharacterManual()
+  }
+}
+
+const saveCharacterAutomatic = () => {
   if (characterStore.name.length >= 3
       && (!selectItem.value || startItem.value !== '')
-      && weapon) {//TODO fix this position
+      && weapon.value) {
     if (swapStats.value.first !== swapStats.value.second) {      
       characterStore.setStat(
         swapStats.value.first as StatKeys,
@@ -259,16 +328,88 @@ const saveCharacter = () => {
     characterStore.setDescription('coat', `${color[rollDices(1, 6) - 1]} ${pattern[rollDices(1, 6) - 1]}`)
     characterStore.setDescription('details', detailsList[rollDices(1, detailsList.length) - 1])
 
-    selectItem.value = true
-    startItem.value = ''
-    weapon.value = ''
+    characterStore.setCreationMethod('automatic')
+    popupStore.setPopup(null)
   }
 }
 
-onMounted(() => createCharacter())
+const saveCharacterManual = () => {
+  // Clear character but keep it initialized with empty values
+  characterStore.clearCharacter()
+  // Set creation method AFTER clearing
+  characterStore.setCreationMethod('manual')
+  popupStore.setPopup(null)
+}
 </script>
 
 <style lang="scss" scoped>
+.mode-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  padding: 20px;
+
+  .selection-title {
+    text-align: center;
+    font-family: 'Pirata One', sans-serif;
+    font-size: 2.5em;
+    color: var(--main);
+    margin: 0;
+  }
+
+  .mode-buttons {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+
+    .mode-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      padding: 25px 35px;
+      border: 3px solid var(--main);
+      background-color: transparent;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      min-width: 150px;
+
+      &:hover {
+        background-color: var(--main);
+        color: var(--background);
+        transform: scale(1.05);
+      }
+
+      .mode-icon {
+        font-size: 3em;
+      }
+
+      .mode-name {
+        font-family: 'Pirata One', sans-serif;
+        font-size: 2em;
+        color: inherit;
+      }
+
+      .mode-description {
+        font-family: 'Ubuntu', sans-serif;
+        font-size: 0.9em;
+        color: var(--second);
+      }
+
+      &:hover .mode-description {
+        color: var(--background);
+      }
+    }
+  }
+}
+
+.creation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 .content {
   display: flex;
   justify-content: space-between;
