@@ -39,6 +39,7 @@ import AppNotification from './notification/AppNotification.vue'
 import PopupWarbandForm from './popup/PopupWarbandForm.vue'
 import PopupWarbandRemove from './popup/PopupWarbandRemove.vue'
 import PopupInformUser from './popup/PopupInformUser.vue'
+import { extractShareCharacter } from '../composables/shareLink'
 
 const popup = usePopupStore()
 const characterStore = useCharacterStore()
@@ -87,6 +88,13 @@ characterStore.$subscribe(() => {
 })
 
 onMounted(() => {
+  const sharedCharacter = extractShareCharacter()
+
+  if (sharedCharacter) {
+    characterStore.fillCharacter(sharedCharacter)
+    return
+  }
+
   const character = localStorage.getItem('mr__character')
 
   if (character) characterStore.fillCharacter(JSON.parse(character))
