@@ -9,3 +9,11 @@
   - In Manual mode: All fields (Name, Background, Birthsign, Stats) are fully editable from the start
   - Character creation method is tracked and influences field editability across the character sheet
 
+- **Shareable Character Links**: Generate compressed shareable links to share character sheets with others
+  - Compress character data using LZ-string algorithm for compact URL representation
+  - Share links contain full character state encoded in URL parameters
+  - Automatic character loading when opening a shared link
+  - One-click copy to clipboard with fallback to manual prompt
+  - "Copia link" button appears when viewing a shared character
+  - Shareable links work just like Excalidraw - send the URL and others can view your exact character state
+

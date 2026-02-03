@@ -11,21 +11,6 @@
         i
       </button>
     </div>
-    <div class="menu__fork-notice menu--bordered">
-      <p class="fork-notice__title">🍴 This is a Fork</p>
-      <p class="fork-notice__text">
-        Based on <a href="https://github.com/BrightsDays/mausritter-online-sheet" target="_blank" rel="noopener">BrightsDays' original</a>
-      </p>
-      <details class="fork-notice__features">
-        <summary>✨ New Features</summary>
-        <ul>
-          <li>2-slot inventory items</li>
-          <li>Auto-rotation system</li>
-          <li>Campaign resources</li>
-          <li>Create Manual Sheet </li>
-        </ul>
-      </details>
-    </div>
     <div 
       v-if="characterStore.warband"
       class="menu__options menu--bordered"
@@ -67,6 +52,21 @@
           @click="downloadCharacter()"
         >
           Download character
+        </button>
+        <button
+          v-if="isSharedLink"
+          class="menu__item"
+          @click="copySharedLink()"
+        >
+          Copia link
+        </button>
+        <button
+          v-else
+          class="menu__item"
+          :disabled="!characterStore.name"
+          @click="shareCharacter()"
+        >
+          Condividi link
         </button>
         <div>
           <button
@@ -184,12 +184,16 @@ import { Item } from '../../types/inventory'
 import BankedItems from './MenuBanked.vue'
 import { useCharacterStore } from '../../store/character'
 import { useCustomDataStore } from '../../store/customData'
+import { useNotificationsStore } from '../../store/notifications'
+import { buildShareUrl, getShareableCharacterState, hasShareParam } from '../../composables/shareLink'
 import MenuGrits from './MenuGrits.vue'
 import MenuCampaignItems from './MenuCampaignItems.vue'
 
 const popupStore = usePopupStore()
 const characterStore = useCharacterStore()
 const customDataStore = useCustomDataStore()
+const notificationsStore = useNotificationsStore()
+const isSharedLink = computed(() => hasShareParam())
 
 // Merge dati base con dati custom dalla campagna
 const utilityList = computed(() => [
@@ -242,6 +246,37 @@ const downloadCharacter = () => {
 
 	element.click()
 	document.body.removeChild(element)
+}
+
+const shareCharacter = async () => {
+  const character = getShareableCharacterState(characterStore)
+  const shareUrl = buildShareUrl(character)
+
+  try {
+    await navigator.clipboard.writeText(shareUrl)
+    notificationsStore.setNotification({
+      type: 'info',
+      message: 'Link copiato negli appunti.'
+    })
+  } catch (error) {
+    console.error('Errore copia link:', error)
+    window.prompt('Copia questo link:', shareUrl)
+  }
+}
+
+const copySharedLink = async () => {
+  const shareUrl = window.location.href
+
+  try {
+    await navigator.clipboard.writeText(shareUrl)
+    notificationsStore.setNotification({
+      type: 'info',
+      message: 'Link copiato negli appunti.'
+    })
+  } catch (error) {
+    console.error('Errore copia link:', error)
+    window.prompt('Copia questo link:', shareUrl)
+  }
 }
 
 const addCustomItem = () => popupStore.setPopup('addCustomItem')
@@ -322,72 +357,6 @@ const addHireling = () => popupStore.setPopup('addHireling')
   &--bordered {
     border-bottom: 1px solid var(--main);
   }
-
-  &__fork-notice {
-    padding: 12px 15px;
-    background: rgba(255, 165, 0, 0.05);
-  }
 }
 
-.fork-notice {
-  &__title {
-    font-size: 1.4em;
-    font-weight: 600;
-    color: var(--main);
-    margin-bottom: 6px;
-  }
-
-  &__text {
-    font-size: 1.2em;
-    color: var(--main);
-    margin-bottom: 8px;
-    line-height: 1.4;
-
-    a {
-      color: #ff8c00;
-      text-decoration: none;
-      font-weight: 500;
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
-
-  &__features {
-    font-size: 1.2em;
-    color: var(--main);
-
-    summary {
-      cursor: pointer;
-      font-weight: 500;
-      margin-bottom: 6px;
-      user-select: none;
-
-      &:hover {
-        color: #ff8c00;
-      }
-    }
-
-    ul {
-      margin: 6px 0 0 18px;
-      padding: 0;
-      list-style: none;
-
-      li {
-        position: relative;
-        padding-left: 12px;
-        margin-bottom: 4px;
-        line-height: 1.4;
-
-        &:before {
-          content: "→";
-          position: absolute;
-          left: 0;
-          color: #ff8c00;
-        }
-      }
-    }
-  }
-}
 </style>

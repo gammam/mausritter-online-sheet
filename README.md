@@ -1,17 +1,15 @@
-# Mausritter online character-sheet
-
-> **🍴 This is a fork** of the original [Mausritter Online Sheet](https://github.com/BrightsDays/mausritter-online-sheet) by [BrightsDays](https://github.com/BrightsDays).  
-> This version includes additional features like 2-slot inventory items, auto-rotation system, and campaign resources management.
+# Mausritter Online Character Sheet
 
 Mausritter is a sword-and-whiskers role-playing game by [Losing Games](https://losing.games/) that's quick, easy, and great for beginners. Step into the shoes of courageous mice and embark on adventures in a world filled with peril. Check out the game rules at [mausritter.com](https://mausritter.com).
 
-## What's New in This Fork
+## Features
 
 - **2-Slot Inventory Items**: Support for items that occupy 2 inventory slots (like Bows, Spears, etc.)
 - **Auto-Rotation System**: Smart placement that automatically rotates items horizontally or vertically based on available space
 - **Campaign Resources**: Manage custom campaign items separately from standard resources with dedicated JSON files
 - **Enhanced Drag & Drop**: Improved item placement logic with orphaned slot cleanup
 - **Manual Character Creation**: Create characters with completely empty and editable fields, with automatic generation as an alternative
+- **Shareable Character Links**: Generate compressed shareable links to share your character with others
 
 ## Why use this application?
 
